@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pop-up Window</title>
+    <script type="text/javascript" src="jquery.js"></script>
+    <style>
+        .center {
+            position:absolute;
+            top:50%;
+            left:50%;
+            -webkit-transform: translate(-50%, -50%);
+            -moz-transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%);
+            -o-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+        }
+        .subtransparent {
+            display: none;
+            position: absolute;
+            background-color:rgba(0,0,0,0.4);
+        }
+        .cover {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+        .tiny {
+            z-index: 120;
+            -webkit-border-radius:20px;
+            -moz-border-radius:20px;
+            border-radius:20px;
+            color:white;
+            -webkit-box-shadow: 0 0 50px black;
+            -moz-box-shadow: 0 0 50px black;
+            box-shadow: 0 0 50px black;
+            
+        }
+        .close-box {
+            position:absolute;
+            right:0;
+            margin:20px;
+            font-size:10px;
+            color:#efefef;
+        }
+        .close-box:hover {
+            cursor:pointer;
+        }
+        .content {
+            padding:20px;
+        }
+    </style>
+    <script>
+        var EventUtil={
+            addHandler:function(element,type,handler){
+                if(element.addEventListener){
+                    element.addEventListener(type,handler,false);
+                } else if(element.attachEvent){
+                    element.attachEvent("on"+type,handler);
+                } else {
+                    element["on"+type]=handler;
+                }
+            },
+            getEvent:function(event){
+                return event?event:window.event;
+            },
+            getTarget:function(event){
+                return event.target||event.srcElement;
+            },
+            preventDefault:function(event){
+                if(event.preventDefault){
+                    event.preventDefault();
+                } else {
+                    event.returnValue=false;
+                }
+            },
+            removeHandler:function(element,type,handler){
+                if(element.removeEventListener){
+                    element.removeEventListener(type,handler,false);
+                } else if(element.detachEvent){
+                    element.detachEvent("on"+type,handler);
+                } else {
+                    element["on"+type]=null;
+                }
+            },
+            stopPropagation:function(event){
+                if(event.stopPropagation){
+                    event.stopPropagation();
+                } else {
+                    event.cancelBubble=true;
+                }
+            }
+        };
+        function addLoadEvent(func){
+            var oldLoad=window.onload;
+            if(typeof window.onload!="function"){
+                window.onload=func;
+            } else {
+                window.onload=function(){
+                    oldLoad();
+                    func();
+                }
+            }
+        }
+      /*  function moveElement(elementID,final_x,final_y,interval){
+            var elem=document.getElementById(elementID);
+            var xpos=parseInt(elem.style.left);
+            var ypos=parseInt(elem.style.top);
+            if(xpos == final_x && ypos == final_y) return false;
+            if(xpos < final_x)  xpos++;
+            if(xpos > final_x)  xpos--;
+            if(ypos < final_y)  ypos++;
+            if(ypos > final_y)  ypos--;
+            elem.style.left=xpos+"px";
+            elem.style.top=ypos+"px";
+            var repeat = "moveElement('"+elementID+"',"+final_x+","+final_y+","+interval+")";
+            elem.movement=setTimeout(repeat,interval);
+        }*/
+
+        function popWindow() {
+            var btn = document.getElementById("myButton");
+            var cover = document.getElementById("dim-cover");
+            var content = document.getElementById("pop-up");
+            var close = document.getElementById("pop-close");
+
+            content.style.width="400px";
+            content.style.height="400px";
+
+            var bodyW=window.innerWidth;
+            var bodyH=window.innerHeight;
+            var contentW=parseInt(content.style.width);
+            var contentH=parseInt(content.style.height);
+
+                EventUtil.addHandler(btn, "click", function () {
+                    content.style.left=(bodyW-contentW)/2+"px";
+                    content.style.top=(bodyH-contentH)/2+"px";
+
+                    cover.style.display = "block";
+                    var $content = $(content);
+                    $content.slideDown();
+                });
+                EventUtil.addHandler(close, "click", function () {
+                    var $content = $(content);
+                    $content.hide();
+                    cover.style.display = "none";
+                });
+            var mouseOffsetX = 0;
+            var mouseOffsetY = 0;
+            var draggable=false;
+            EventUtil.addHandler(content,"mousedown",function(e){
+                mouseOffsetX = e.pageX-parseInt(content.style.left);
+                mouseOffsetY = e.pageY-parseInt(content.style.top);
+                draggable=true;
+            });
+            EventUtil.addHandler(document,"mousemove",function(e){
+                if(draggable===true) {
+                    content.style.left = e.pageX - mouseOffsetX + "px";
+                    content.style.top = e.pageY - mouseOffsetY + "px";
+                }
+            });
+            EventUtil.addHandler(document,"mouseup",function(){
+                draggable=false;
+            });
+        }
+        addLoadEvent(popWindow);
+    </script>
+</head>
+<body>
+<button type="button" class="center" id="myButton">Click Me!</button>
+<div class="subtransparent cover" id="dim-cover"></div>
+<div class="subtransparent tiny" id="pop-up">
+    <span class="close-box" id="pop-close">Close</span>
+    <div class="content center" id="win-content">I am a window</div>
+</div>
+</body>
+</html>
